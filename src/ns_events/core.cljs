@@ -25,6 +25,7 @@
       (dom/input #js {:value data
                       :onChange #(put! ch [:edit (e->val %)])}))))
 
+;; Higher order components don't work
 (defn tagger [component ch index]
   (fn [data owner opts]
     (let [indexed-ch ch]
@@ -37,17 +38,14 @@
                                     :react-key (str "editable-" index)}))))))
 
 (defn sortable [data owner opts]
-  (letfn [(tagged-editable [index]
-            (tagger editable (:ch opts) index))]
-    (reify
-      om/IDisplayName
-      (display-name [_] "Sortable")
-      om/IRender
-      (render [_]
-        (apply dom/ul nil
-          (map-indexed
-            #(om/build (tagged-editable editable %1) %2 {:opts opts})
-            data))))))
+  (reify
+    om/IDisplayName
+    (display-name [_] "Sortable")
+    om/IRender
+    (render [_]
+      (apply dom/ul nil
+        (map-indexed #(om/build editable %2 {:opts opts})
+          data)))))
 
 (let [ch (chan)]
   (om/root
